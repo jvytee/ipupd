@@ -1,0 +1,11 @@
+[package]
+name = "ipupdate"
+version = "0.1.0"
+authors = ["Julian Theis <julian.theis@posteo.de>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+getopts = "0.2"
+ureq = "1.5"
