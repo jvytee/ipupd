@@ -1,7 +1,7 @@
-mod ip_addrs;
+mod ipaddrs;
 
 use getopts::Options;
-use ip_addrs::IpAddrs;
+use ipaddrs::IpAddrs;
 use std::env;
 use std::error::Error;
 
