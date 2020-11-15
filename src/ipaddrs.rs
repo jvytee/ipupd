@@ -20,18 +20,23 @@ impl IpAddrs {
         }
     }
 
-    pub fn from_domain(domain: &str) -> std::io::Result<IpAddrs> {
-        let socket_addrs = format!("{}:443", domain).to_socket_addrs()?;
-        let mut ip_addr = IpAddrs::new();
+    pub fn from_domain(domain: &str) -> Option<IpAddrs> {
+        let socket_addrs = format!("{}:443", domain).to_socket_addrs().ok();
 
-        for socket_addr in socket_addrs {
-            match socket_addr {
-                SocketAddr::V4(v4_addr) => ip_addr.v4 = Some(v4_addr.ip().to_string()),
-                SocketAddr::V6(v6_addr) => ip_addr.v6 = Some(v6_addr.ip().to_string())
+        return if let Some(socket_addrs) = socket_addrs {
+            let mut ip_addr = IpAddrs::new();
+
+            for socket_addr in socket_addrs {
+                match socket_addr {
+                    SocketAddr::V4(v4_addr) => ip_addr.v4 = Some(v4_addr.ip().to_string()),
+                    SocketAddr::V6(v6_addr) => ip_addr.v6 = Some(v6_addr.ip().to_string())
+                }
             }
-        }
 
-        Ok(ip_addr)
+            Some(ip_addr)
+        } else {
+            None
+        }
     }
 
     pub fn from_interface(name: &str) -> Option<IpAddrs> {
@@ -59,7 +64,8 @@ impl IpAddrs {
     }
 
     fn is_global(ip_network: &Ipv6Addr) -> bool {
-        let first_segment = *ip_network.segments().first().unwrap_or(&(0xff00 as u16));
-        0x0000 < first_segment && first_segment < 0xf000
+        //let first_segment = *ip_network.segments().first().unwrap_or(&(0xff00 as u16));
+        //0x0000 < first_segment && first_segment < 0xf000
+        ip_network.segments().first().map_or(false, |segment| 0x0000 < *segment && *segment < 0xf000)
     }
 }

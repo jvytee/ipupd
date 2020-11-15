@@ -19,7 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     let interface = &matches.free[1];
-    let interface_ips = IpAddrs::from_interface(interface).expect(&format!("Could not find interface {}", interface));
+    let interface_ips = IpAddrs::from_interface(interface).expect(&format!("Could not inspect {}", interface));
     println!("Interface: {}\n\
               IPv4: {}\n\
               IPv6: {}\n", interface, interface_ips.v4.unwrap_or("None".to_string()), interface_ips.v6.unwrap_or("None".to_string()));
