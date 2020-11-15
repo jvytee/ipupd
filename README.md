@@ -1,2 +1,2 @@
-# ipupdate
-Update an API with your current IP address
+# ipupd
+Update IP adresses at some DynDNS API
