@@ -1,4 +1,7 @@
+mod ip_addrs;
+
 use getopts::Options;
+use ip_addrs::IpAddrs;
 use std::env;
 use std::error::Error;
 use std::net::{
@@ -26,33 +29,4 @@ fn main() -> Result<(), Box<dyn Error>> {
               IPv6: {}", domain, ip_addrs.v4.unwrap_or("None".to_string()), ip_addrs.v6.unwrap_or("None".to_string()));
 
     Ok(())
-}
-
-#[derive(Debug)]
-struct IpAddrs {
-    v4: Option<String>,
-    v6: Option<String>,
-}
-
-impl IpAddrs {
-    fn new() -> IpAddrs {
-        IpAddrs {
-            v4: None,
-            v6: None,
-        }
-    }
-
-    fn from_domain(domain: &str) -> std::io::Result<IpAddrs> {
-        let socket_addrs = format!("{}:443", domain).to_socket_addrs()?;
-        let mut ip_addr = IpAddrs::new();
-
-        for socket_addr in socket_addrs {
-            match socket_addr {
-                V4(v4_addr) => ip_addr.v4 = Some(v4_addr.ip().to_string()),
-                V6(v6_addr) => ip_addr.v6 = Some(v6_addr.ip().to_string())
-            }
-        }
-
-        Ok(ip_addr)
-    }
 }
