@@ -64,8 +64,6 @@ impl IpAddrs {
     }
 
     fn is_global(ip_network: &Ipv6Addr) -> bool {
-        //let first_segment = *ip_network.segments().first().unwrap_or(&(0xff00 as u16));
-        //0x0000 < first_segment && first_segment < 0xf000
         ip_network.segments().first().map_or(false, |segment| 0x0000 < *segment && *segment < 0xf000)
     }
 }
