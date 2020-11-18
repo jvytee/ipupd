@@ -8,16 +8,16 @@ use std::io::{
 };
 
 #[derive(Deserialize)]
-struct Config {
-    interface: String,
-    domain: String,
-    url: String,
-    user: Option<String>,
-    password: Option<String>,
+pub struct Config {
+    pub interface: String,
+    pub domain: String,
+    pub url: String,
+    pub user: Option<String>,
+    pub password: Option<String>,
 }
 
 impl Config {
-    fn from_file(filename: &str) -> Result<Config> {
+    pub fn from_file(filename: &str) -> Result<Config> {
         let mut file = File::open(filename)?;
         let mut content = String::new();
 
