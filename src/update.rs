@@ -10,11 +10,12 @@ pub fn update(url: &str, basic_auth: Option<(&str, &str)>) -> Result<String, Htt
 
     let response = request.call();
     return if let Some(error) = response.synthetic_error() {
-        Err(HttpError { status_code: error.status() })
+        Err(HttpError {
+            status_code: error.status(),
+        })
     } else {
         Ok(response.into_string().unwrap_or(String::new()))
-    }
-
+    };
 }
 
 #[derive(Debug)]

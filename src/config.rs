@@ -1,11 +1,6 @@
 use serde::Deserialize;
 use std::fs::File;
-use std::io::{
-    prelude::*,
-    Error,
-    ErrorKind,
-    Result
-};
+use std::io::{prelude::*, Error, ErrorKind, Result};
 
 #[derive(Deserialize)]
 pub struct Config {
@@ -25,7 +20,10 @@ impl Config {
             let config: Config = toml::from_str(&content)?;
             Ok(config)
         } else {
-            Err(Error::new(ErrorKind::InvalidData, "Could not parse configuration data"))
-        }
+            Err(Error::new(
+                ErrorKind::InvalidData,
+                "Could not parse configuration data",
+            ))
+        };
     }
 }
