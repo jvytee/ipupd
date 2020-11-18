@@ -1,4 +1,6 @@
+mod config;
 mod ipaddrs;
+mod update;
 
 use getopts::Options;
 use ipaddrs::IpAddrs;
