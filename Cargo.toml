@@ -9,4 +9,6 @@ edition = "2018"
 [dependencies]
 getopts = "0.2"
 pnet = "0.26"
+serde = "1.0"
+toml = "0.5"
 ureq = "1.5"
