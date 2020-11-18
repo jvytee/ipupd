@@ -1,11 +1,20 @@
+use crate::config::{Auth, Query};
+use crate::ipaddrs::IpAddrs;
 use std::error::Error;
 use std::fmt::{Debug, Display};
 
-pub fn update(url: &str, basic_auth: Option<(&str, &str)>) -> Result<String, HttpError> {
-    let mut request = if let Some((user, password)) = basic_auth {
-        ureq::get(url).auth(user, password).clone()
+pub fn update(url: &str, query: &Query, ip_addrs: IpAddrs, basic_auth: Option<Auth>) -> Result<String, HttpError> {
+    let mut request = if let Some(auth) = basic_auth {
+        ureq::get(url)
+            .query(&query.ipv4, &ip_addrs.v4.unwrap_or(String::new()))
+            .query(&query.ipv6, &ip_addrs.v6.unwrap_or(String::new()))
+            .auth(&auth.username, &auth.password)
+            .clone()
     } else {
-        ureq::get(url).clone()
+        ureq::get(url)
+            .query(&query.ipv4, &ip_addrs.v4.unwrap_or(String::new()))
+            .query(&query.ipv6, &ip_addrs.v6.unwrap_or(String::new()))
+            .clone()
     };
 
     let response = request.call();
