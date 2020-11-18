@@ -1,0 +1,6 @@
+interface = "wlp4s0"
+domain = "juliantheis.xyz"
+url = "https://localhost/dyndns"
+
+user = "jvytee"
+password = "blablub"
