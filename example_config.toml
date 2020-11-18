@@ -1,6 +1,11 @@
 interface = "wlp4s0"
 domain = "juliantheis.xyz"
-url = "https://localhost/dyndns"
+url = "https://dyndns.inwx.com/nic/update"
 
-user = "jvytee"
+[basic_auth]
+username = "jvytee"
 password = "blablub"
+
+[query]
+ipv4 = "myip"
+ipv6 = "myipv6"

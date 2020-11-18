@@ -7,8 +7,20 @@ pub struct Config {
     pub interface: String,
     pub domain: String,
     pub url: String,
-    pub user: Option<String>,
-    pub password: Option<String>,
+    pub basic_auth: Option<Auth>,
+    pub query: Query
+}
+
+#[derive(Deserialize)]
+pub struct Auth {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Deserialize)]
+pub struct Query {
+    pub ipv4: String,
+    pub ipv6: String
 }
 
 impl Config {
