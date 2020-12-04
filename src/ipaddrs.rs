@@ -2,7 +2,7 @@ use pnet::datalink::interfaces;
 use pnet::ipnetwork::IpNetwork;
 use std::net::{Ipv6Addr, SocketAddr, ToSocketAddrs};
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct IpAddrs {
     pub v4: Option<String>,
     pub v6: Option<String>,
@@ -43,12 +43,10 @@ impl IpAddrs {
             let mut ip_addr = IpAddrs::new();
 
             for ip_network in ip_networks {
-                match ip_network {
-                    IpNetwork::V4(v4_network) => ip_addr.v4 = Some(v4_network.ip().to_string()),
-                    IpNetwork::V6(v6_network) => {
-                        if Self::is_global(&v6_network.ip()) {
-                            ip_addr.v6 = Some(v6_network.ip().to_string())
-                        }
+                if Self::is_global(&ip_network) {
+                    match ip_network {
+                        IpNetwork::V4(v4_network) => ip_addr.v4 = Some(v4_network.ip().to_string()),
+                        IpNetwork::V6(v6_network) => ip_addr.v6 = Some(v6_network.ip().to_string())
                     }
                 }
             }
@@ -59,10 +57,16 @@ impl IpAddrs {
         };
     }
 
-    fn is_global(ip_network: &Ipv6Addr) -> bool {
-        ip_network
-            .segments()
-            .first()
-            .map_or(false, |segment| 0x0000 < *segment && *segment < 0xf000)
+    fn is_global(ip_network: &IpNetwork) -> bool {
+        match ip_network {
+            IpNetwork::V6(v6_network) => v6_network.ip()
+                .segments()
+                .first()
+                .map_or(false, |segment| 0x0000 < *segment && *segment < 0xf000),
+            IpNetwork::V4(v4_network) => {
+                let ip = v4_network.ip();
+                !(ip.is_loopback() || ip.is_private() || ip.is_link_local())
+            }
+        }
     }
 }
