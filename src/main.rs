@@ -29,14 +29,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             let interface_ips = IpAddrs::from_interface(interface)
                 .expect(&format!("Could not inspect {}", interface));
 
-            // TODO Actually compare IPs
             let domain = &config.domain;
             let domain_ips = IpAddrs::from_domain(domain)
                 .expect(&format!("Could not resolve {}", domain));
 
-            let response = update::update(&config.url, &config.query, interface_ips, config.basic_auth)
-                .unwrap_or_else(|error| error.to_string());
-            println!("{}", response);
+            if interface_ips != domain_ips {
+                println!("{:?}", interface_ips);
+                let response = update::update(&config.url, &config.query, interface_ips, config.basic_auth)
+                    .unwrap_or_else(|error| error.to_string());
+                println!("{}", response);
+            }
         }
         Err(error) => {
             println!("Could not parse config file {}: {}", &config_file, error);
