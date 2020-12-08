@@ -1,11 +1,18 @@
 use pnet::datalink::interfaces;
 use pnet::ipnetwork::IpNetwork;
-use std::net::{Ipv6Addr, SocketAddr, ToSocketAddrs};
+use std::net::{SocketAddr, ToSocketAddrs};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct IpAddrs {
     pub v4: Option<String>,
     pub v6: Option<String>,
+}
+
+impl PartialEq for IpAddrs {
+    fn eq(&self, other: &Self) -> bool {
+        self.v4.as_ref().unwrap_or(&String::from("0.0.0.0")) == other.v4.as_ref().unwrap_or(&String::from("0.0.0.0"))
+            && self.v6 == other.v6
+    }
 }
 
 impl IpAddrs {
