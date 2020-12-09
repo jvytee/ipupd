@@ -10,8 +10,7 @@ pub struct IpAddrs {
 
 impl PartialEq for IpAddrs {
     fn eq(&self, other: &Self) -> bool {
-        self.v4.as_ref().unwrap_or(&String::from("0.0.0.0")) == other.v4.as_ref().unwrap_or(&String::from("0.0.0.0"))
-            && self.v6 == other.v6
+        self.v4_string() == other.v4_string() && self.v6_string() == other.v6_string()
     }
 }
 
@@ -62,6 +61,16 @@ impl IpAddrs {
         } else {
             None
         };
+    }
+
+    pub fn v4_string(&self) -> String {
+        self.v4.clone()
+            .unwrap_or("0.0.0.0".to_string())
+    }
+
+    pub fn v6_string(&self) -> String {
+        self.v6.clone()
+            .unwrap_or("::".to_string())
     }
 
     fn is_global(ip_network: &IpNetwork) -> bool {
