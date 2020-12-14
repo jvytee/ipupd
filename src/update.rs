@@ -6,14 +6,14 @@ use std::fmt::{Debug, Display};
 pub fn update(url: &str, query: &Query, ip_addrs: IpAddrs, basic_auth: Option<Auth>) -> Result<String, HttpError> {
     let mut request = if let Some(auth) = basic_auth {
         ureq::get(url)
-            .query(&query.ipv4, &ip_addrs.v4.unwrap_or(String::new()))
-            .query(&query.ipv6, &ip_addrs.v6.unwrap_or(String::new()))
+            .query(&query.ipv4, &ip_addrs.v4_string())
+            .query(&query.ipv6, &ip_addrs.v6_string())
             .auth(&auth.username, &auth.password)
             .clone()
     } else {
         ureq::get(url)
-            .query(&query.ipv4, &ip_addrs.v4.unwrap_or(String::new()))
-            .query(&query.ipv6, &ip_addrs.v6.unwrap_or(String::new()))
+            .query(&query.ipv4, &ip_addrs.v4_string())
+            .query(&query.ipv6, &ip_addrs.v6_string())
             .clone()
     };
 
