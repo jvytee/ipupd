@@ -1,8 +1,9 @@
 # ipupd
-Update IP adresses at some DynDNS API
+Fetches current IP addresses of the machine and compares them with DNS records of a domain.
+If there is a difference, records are updated via configurable HTTP request to an API endpoint.
 
 **Work in progress!**
-Since IP addresses are read from the interface directly at the moment, this tool will update IPv6 addresses only in most cases.
+Since current IP addresses are read from the interface directly at the moment, this tool will update IPv6 addresses only in most cases.
 If no global address could be detected, it is subsituted by "0.0.0.0" or "::" respectively.
 
 ## Installation
@@ -41,5 +42,5 @@ Parameters for ipupd can be specified in a simple [TOML](https://toml.io/en/) fi
 - `interface` gives the network interface which will be used to estimate current IP addresses
 - `domain` is the domain, for which IPs are going to be updated
 - `url` specifies an API endpoint by which IPs are updated
-- Under `basic_auth`, HTTP basic authorization for the API can be configured (optional)
 - Under `query`, the query parameter names for the API are set. So in combination with `url`, the example will result in a HTTP GET request to `https://dyndns.inwx.com/nic/update?myip=1.2.3.4&myipv6=1234:4567::89`.
+- `basic_auth` allows for the configuration of HTTP basic authorization for the API (optional)
