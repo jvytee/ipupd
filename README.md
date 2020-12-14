@@ -13,6 +13,8 @@ Afterwards, a binary can be built from source quite easily:
 
     git clone https://github.com/jvytee/ipupd.git
     cargo install --path ipupd
+    
+Alternatively, linux binaries may be downloaded from the [releases section](https://github.com/jvytee/ipupd/releases).
 
 ## Usage
 
