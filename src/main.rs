@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matches = opts.parse(&args).expect("Could not parse arguments");
 
     if matches.opt_present("h") {
-        let usage = format!("Usage: {}", args[0]);
+        let usage = format!("Usage: {} [OPTIONS]", args[0]);
         println!("{}", opts.usage(&usage));
         return Ok(());
     }
@@ -34,7 +34,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .expect(&format!("Could not resolve {}", domain));
 
             if interface_ips != domain_ips {
-                println!("{:?}", interface_ips);
                 let response = update::update(&config.url, &config.query, interface_ips, config.basic_auth)
                     .unwrap_or_else(|error| error.to_string());
                 println!("{}", response);
