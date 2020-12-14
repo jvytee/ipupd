@@ -12,3 +12,9 @@ pnet = "0.26"
 serde = "1.0"
 toml = "0.5"
 ureq = "1.5"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+
