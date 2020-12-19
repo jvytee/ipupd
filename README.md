@@ -24,25 +24,32 @@ Alternatively, linux binaries may be downloaded from the [releases section](http
         -h, --help          show help and exit
         -c, --config FILE   configuration file
 
-If no configuration file is given explicitely, ipupd will try to use `config.toml` in the current working directory.
+If no configuration file is given explicitely, ipupd will try to use `/etc/ipupd/config.toml`.
+
+### With SystemD
+In most cases, it makes sense to run ipupd in regular intervals to keep IP addresses up to date.
+For this reason, preconfigured SystemD units implementing a timer to call ipupd every 30 seconds can be found in `extra/systemd`.
+To use the SystemD timer, the ipupd binary needs to be installed in `/usr/local/bin` and `service` as well as `timer` files have to be present in `/etc/systemd/system`.
+Afterwards, `ipupd.timer` may be enabled/started like any regular SystemD service.
 
 ## Configuration
-Parameters for ipupd can be specified in a simple [TOML](https://toml.io/en/) file similar to this:
+By default, ipupd will try to read its configuration from `/etc/ipupd/config.toml`.
+Parameters are set in [TOML](https://toml.io/en/) format like below:
 
-    interface = "wlp4s0"
-    domain = "juliantheis.xyz"
+    interface = "eth0"
+    domain = "example.org"
     url = "https://dyndns.inwx.com/nic/update"
-    
-    [basic_auth]
-    username = "jvytee"
-    password = "blablub"
     
     [query]
     ipv4 = "myip"
     ipv6 = "myipv6"
+    
+    [basic_auth]
+    username = "example"
+    password = "12345"
 
 - `interface` gives the network interface which will be used to estimate current IP addresses
 - `domain` is the domain, for which IPs are going to be updated
 - `url` specifies an API endpoint by which IPs are updated
-- Under `query`, the query parameter names for the API are set. So in combination with `url`, the example will result in a HTTP GET request to `https://dyndns.inwx.com/nic/update?myip=1.2.3.4&myipv6=1234:4567::89`.
+- `query` defines the query parameter names for the API. So in combination with `url`, the example will result in a HTTP GET request to `https://dyndns.inwx.com/nic/update?myip=1.2.3.4&myipv6=1234:4567::89`.
 - `basic_auth` allows for the configuration of HTTP basic authorization for the API (optional)
