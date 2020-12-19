@@ -1,10 +1,10 @@
-interface = "wlp4s0"
-domain = "juliantheis.xyz"
+interface = "eth0"
+domain = "example.org"
 url = "https://dyndns.inwx.com/nic/update"
 
 [basic_auth]
-username = "jvytee"
-password = "blablub"
+username = "example"
+password = "12345"
 
 [query]
 ipv4 = "myip"
