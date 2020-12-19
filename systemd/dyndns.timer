@@ -1,0 +1,9 @@
+[Unit]
+Description=Execute ipupd every 30 seconds to keep IP addresses updated
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=30s
+
+[Install]
+WantedBy=timers.target

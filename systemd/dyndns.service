@@ -1,0 +1,9 @@
+[Unit]
+Description=Update IP addresses at some DynDNS API via HTTP request
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/ipupd
+
+[Install]
+WantedBy=multi-user.target
