@@ -22,7 +22,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         return Ok(());
     }
 
-    let config_file = matches.opt_str("c").unwrap_or("config.toml".to_string());
+    let config_file = matches.opt_str("c").unwrap_or("/etc/ipupd/config.toml".to_string());
     match Config::from_file(&config_file) {
         Ok(config) => {
             let interface = &config.interface;
