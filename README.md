@@ -29,24 +29,26 @@ If no configuration file is given explicitely, ipupd will try to use `/etc/ipupd
 ### With SystemD
 In most cases, it makes sense to run ipupd in regular intervals to keep IP addresses up to date.
 For this reason, preconfigured SystemD units implementing a timer to call ipupd every 30 seconds can be found in `extra/systemd`.
-To use the SystemD timer, the ipupd binary needs to be installed in `/usr/local/bin` and `service` as well as `timer` files have to be present in `/etc/systemd/system`.
+To use the SystemD timer, the ipupd binary needs to be installed in `/usr/local/bin` and service as well as timer files have to be present in `/etc/systemd/system`.
 Afterwards, `ipupd.timer` may be enabled/started like any regular SystemD service.
 
 ## Configuration
 By default, ipupd will try to read its configuration from `/etc/ipupd/config.toml`.
 Parameters are set in [TOML](https://toml.io/en/) format like below:
 
-    interface = "eth0"
-    domain = "example.org"
-    url = "https://dyndns.inwx.com/nic/update"
-    
-    [query]
-    ipv4 = "myip"
-    ipv6 = "myipv6"
-    
-    [basic_auth]
-    username = "example"
-    password = "12345"
+```toml
+interface = "eth0"
+domain = "example.org"
+url = "https://dyndns.inwx.com/nic/update"
+
+[query]
+ipv4 = "myip"
+ipv6 = "myipv6"
+
+[basic_auth]
+username = "example"
+password = "12345"
+```
 
 - `interface` gives the network interface which will be used to estimate current IP addresses
 - `domain` is the domain, for which IPs are going to be updated
