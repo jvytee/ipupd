@@ -39,3 +39,10 @@ impl Config {
         };
     }
 }
+
+impl Auth {
+    pub fn to_header(&self) -> String {
+        let credentials = base64::encode(&format!("{}:{}", self.username, self.password));
+        format!("Basic {}", credentials)
+    }
+}

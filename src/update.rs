@@ -3,12 +3,12 @@ use crate::ipaddrs::IpAddrs;
 use std::error::Error;
 use std::fmt::{Debug, Display};
 
-pub fn update(url: &str, query: &Query, ip_addrs: IpAddrs, basic_auth: Option<Auth>) -> Result<String, HttpError> {
-    let mut request = if let Some(auth) = basic_auth {
+pub fn update(url: &str, query: &Query, ip_addrs: IpAddrs, basic_auth: Option<Auth>) -> Result<String, ureq::Error> {
+    let request = if let Some(auth) = basic_auth {
         ureq::get(url)
             .query(&query.ipv4, &ip_addrs.v4_string())
             .query(&query.ipv6, &ip_addrs.v6_string())
-            .auth(&auth.username, &auth.password)
+            .set("Authorization", &auth.to_header())
             .clone()
     } else {
         ureq::get(url)
@@ -17,14 +17,10 @@ pub fn update(url: &str, query: &Query, ip_addrs: IpAddrs, basic_auth: Option<Au
             .clone()
     };
 
-    let response = request.call();
-    return if let Some(error) = response.synthetic_error() {
-        Err(HttpError {
-            status_code: error.status(),
-        })
-    } else {
-        Ok(response.into_string().unwrap_or(String::new()))
-    };
+    match request.call() {
+        Ok(response) => Ok(response.into_string().unwrap_or(String::new())),
+        Err(error) => Err(error)
+    }
 }
 
 #[derive(Debug)]
