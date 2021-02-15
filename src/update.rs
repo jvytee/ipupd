@@ -1,7 +1,5 @@
 use crate::config::{Auth, Query};
 use crate::ipaddrs::IpAddrs;
-use std::error::Error;
-use std::fmt::{Debug, Display};
 
 pub fn update(url: &str, query: &Query, ip_addrs: IpAddrs, basic_auth: Option<Auth>) -> Result<String, ureq::Error> {
     let request = if let Some(auth) = basic_auth {
@@ -22,16 +20,3 @@ pub fn update(url: &str, query: &Query, ip_addrs: IpAddrs, basic_auth: Option<Au
         Err(error) => Err(error)
     }
 }
-
-#[derive(Debug)]
-pub struct HttpError {
-    status_code: u16,
-}
-
-impl Display for HttpError {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
-        write!(formatter, "HTTP error: {}", self.status_code)
-    }
-}
-
-impl Error for HttpError {}
