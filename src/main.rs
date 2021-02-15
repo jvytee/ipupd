@@ -25,13 +25,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     let config_file = matches.opt_str("c").unwrap_or("/etc/ipupd/config.toml".to_string());
     match Config::from_file(&config_file) {
         Ok(config) => {
+            let domain = &config.domain;
+            let domain_ips = IpAddrs::from_domain(domain)
+                .expect(&format!("Could not resolve {}", domain));
+
             let interface = &config.interface;
             let interface_ips = IpAddrs::from_interface(interface)
                 .expect(&format!("Could not inspect {}", interface));
 
-            let domain = &config.domain;
-            let domain_ips = IpAddrs::from_domain(domain)
-                .expect(&format!("Could not resolve {}", domain));
+	    if let Some(api) = &config.api {
+		// TODO:
+		// Get IPv4 from API
+		// Adjust interface_ips accordingly
+	    }
 
             if interface_ips != domain_ips {
                 let response = update::update(&config.url, &config.query, interface_ips, config.basic_auth)
