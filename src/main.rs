@@ -1,20 +1,30 @@
 mod config;
+mod error;
 mod ipaddrs;
 mod update;
 
 use config::Config;
+use error::Error;
 use getopts::Options;
 use ipaddrs::IpAddrs;
 use std::env;
-use std::error::Error;
+use std::process;
 
-fn main() -> Result<(), Box<dyn Error>> {
+
+fn main() {
+    if let Err(error) = try_main() {
+        eprintln!("{}", error);
+        process::exit(2);
+    }
+}
+
+fn try_main() -> Result<(), Error> {
     let mut opts = Options::new();
     opts.optflag("h", "help", "show help and exit");
     opts.optopt("c", "config", "configuration file", "FILE");
 
     let args: Vec<String> = env::args().collect();
-    let matches = opts.parse(&args).expect("Could not parse arguments");
+    let matches = opts.parse(&args)?;
 
     if matches.opt_present("h") {
         let usage = format!("Usage: {} [OPTIONS]", args[0]);
