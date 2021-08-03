@@ -44,8 +44,7 @@ fn try_main() -> Result<(), Error> {
                 .expect(&format!("Could not resolve {}", domain));
 
             if interface_ips != domain_ips {
-                let response = update::update(&config.url, &config.query, interface_ips, config.basic_auth)
-                    .unwrap_or_else(|error| error.to_string());
+                let response = update::update(&config.url, &config.query, interface_ips, config.basic_auth)?;
                 println!("{}", response);
             }
         }

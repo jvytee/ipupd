@@ -23,3 +23,11 @@ impl From<getopts::Fail> for Error {
     }
 }
 
+impl From<ureq::Error> for Error {
+    fn from(error: ureq::Error) -> Self {
+        Self {
+            msg: "Could not update IP addresses".to_string(),
+            error: Box::new(error)
+        }
+    }
+}
