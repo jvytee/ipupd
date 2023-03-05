@@ -3,8 +3,8 @@ mod error;
 mod ipaddrs;
 mod update;
 
+use anyhow::Result;
 use config::Config;
-use error::Error;
 use getopts::Options;
 use ipaddrs::IpAddrs;
 use std::env;
@@ -18,7 +18,7 @@ fn main() {
     }
 }
 
-fn try_main() -> Result<(), Error> {
+fn try_main() -> Result<()> {
     let mut opts = Options::new();
     opts.optflag("h", "help", "show help and exit");
     opts.optopt("c", "config", "configuration file", "FILE");
