@@ -1,5 +1,5 @@
 let
-  moz_overlay = import (builtins.fetchTarball https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz);
+  moz_overlay = import (builtins.fetchTarball "https://github.com/mozilla/nixpkgs-mozilla/archive/master.tar.gz");
   nixpkgs = import <nixpkgs> {
     overlays = [ moz_overlay ];
     crossSystem = { config = "aarch64-unknown-linux-gnu"; };
