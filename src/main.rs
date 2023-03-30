@@ -9,6 +9,7 @@ use ipaddrs::IpAddrs;
 use std::env;
 use std::process;
 
+const DEFAULT_CONFIG: &str = "/etc/ipupd/config.toml";
 
 fn main() {
     if let Err(error) = try_main() {
@@ -19,8 +20,13 @@ fn main() {
 
 fn try_main() -> Result<()> {
     let mut opts = Options::new();
-    opts.optflag("h", "help", "show help and exit");
-    opts.optopt("c", "config", "configuration file", "FILE");
+    opts.optflag("h", "help", "Show help and exit");
+    opts.optopt(
+        "c",
+        "config",
+        &format!("Configuration file (default: {})", DEFAULT_CONFIG),
+        "FILE",
+    );
 
     let args: Vec<String> = env::args().collect();
     let matches = opts.parse(&args)?;
@@ -31,7 +37,7 @@ fn try_main() -> Result<()> {
         return Ok(());
     }
 
-    let config_file = matches.opt_str("c").unwrap_or("/etc/ipupd/config.toml".to_string());
+    let config_file = matches.opt_str("c").unwrap_or(DEFAULT_CONFIG.to_string());
     match Config::from_file(&config_file) {
         Ok(config) => {
             let interface = &config.interface;
@@ -39,11 +45,12 @@ fn try_main() -> Result<()> {
                 .expect(&format!("Could not inspect {}", interface));
 
             let domain = &config.domain;
-            let domain_ips = IpAddrs::from_domain(domain)
-                .expect(&format!("Could not resolve {}", domain));
+            let domain_ips =
+                IpAddrs::from_domain(domain).expect(&format!("Could not resolve {}", domain));
 
             if interface_ips != domain_ips {
-                let response = update::update(&config.url, &config.query, interface_ips, config.basic_auth)?;
+                let response =
+                    update::update(&config.url, &config.query, interface_ips, config.basic_auth)?;
                 println!("{}", response);
             }
         }
