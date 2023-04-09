@@ -2,6 +2,7 @@ mod config;
 mod ipaddrs;
 mod update;
 
+use anyhow::Context;
 use anyhow::Result;
 use config::Config;
 use getopts::Options;
@@ -38,27 +39,27 @@ fn try_main() -> Result<()> {
     }
 
     let config_file = matches.opt_str("c").unwrap_or(DEFAULT_CONFIG.to_string());
-    match Config::from_file(&config_file) {
-        Ok(config) => {
-            let interface = &config.interface;
-            let interface_ips = IpAddrs::from_interface(interface)
-                .expect(&format!("Could not inspect {}", interface));
+    let config = Config::from_file(&config_file)
+        .with_context(|| format!("Could not parse config file {}", &config_file))?;
 
-            let domain = &config.domain;
-            let domain_ips =
-                IpAddrs::from_domain(domain).expect(&format!("Could not resolve {}", domain));
+    let interface = &config.interface;
+    let interface_ips = IpAddrs::from_interface(interface)
+        .with_context(|| format!("Could not inspect {}", interface))?;
 
-            if interface_ips != domain_ips {
-                let request = update::create_request(&config, interface_ips);
-                let response = request.call()?;
-                println!("{}", response.into_string()?);
-            }
-        },
+    let domain = &config.domain;
+    let domain_ips =
+        IpAddrs::from_domain(domain).with_context(|| format!("Could not resolve {}", domain))?;
 
-        Err(error) => {
-            println!("Could not parse config file {}: {}", &config_file, error);
-        }
-    };
+    if interface_ips != domain_ips {
+        let request = update::create_request(&config, interface_ips);
+        let response = request.call().context("Could not perform GET request")?;
+        println!(
+            "{}",
+            response
+                .into_string()
+                .context("Could not read response body")?
+        );
+    }
 
     Ok(())
 }
