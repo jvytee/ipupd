@@ -6,6 +6,7 @@
     ipupdDevShell = nixpkgs: with nixpkgs; mkShell {
       nativeBuildInputs = with pkgsBuildHost; [
         cargo
+        clippy
         rust-analyzer
         rustc
         rustfmt
