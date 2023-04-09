@@ -49,11 +49,12 @@ fn try_main() -> Result<()> {
                 IpAddrs::from_domain(domain).expect(&format!("Could not resolve {}", domain));
 
             if interface_ips != domain_ips {
-                let response =
-                    update::update(&config.url, &config.query, interface_ips, config.basic_auth)?;
-                println!("{}", response);
+                let request = update::create_request(&config, interface_ips);
+                let response = request.call()?;
+                println!("{}", response.into_string()?);
             }
-        }
+        },
+
         Err(error) => {
             println!("Could not parse config file {}: {}", &config_file, error);
         }
