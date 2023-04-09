@@ -38,7 +38,7 @@ impl Config {
 
 impl Auth {
     pub fn to_header(&self) -> String {
-        let credentials = standard_engine.encode(&format!("{}:{}", self.username, self.password));
+        let credentials = standard_engine.encode(format!("{}:{}", self.username, self.password));
         format!("Basic {}", credentials)
     }
 }

@@ -45,7 +45,7 @@ impl IpAddrs {
             .map(|interface| interface.ips.clone())
             .next();
 
-        return if let Some(ip_networks) = ip_networks {
+        if let Some(ip_networks) = ip_networks {
             let mut ip_addr = IpAddrs::new();
 
             for ip_network in ip_networks {
@@ -60,7 +60,7 @@ impl IpAddrs {
             Some(ip_addr)
         } else {
             None
-        };
+        }
     }
 
     pub fn v4_string(&self) -> String {
