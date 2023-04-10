@@ -84,7 +84,7 @@ mod tests {
 
     use super::create_request;
 
-    fn test_url_query(ip_addrs: &IpAddrs, url: &str) {
+    fn test_request_query(ip_addrs: &IpAddrs, url: &str) {
         let config = Config {
             interface: "eth0".to_string(),
             domain: "foobar.example".to_string(),
@@ -101,9 +101,30 @@ mod tests {
     }
 
     #[test]
-    fn query_empty() {
+    fn request_query_empty() {
         let ip_addrs = IpAddrs { v4: None, v6: None };
         let url = "https://dyndns.example/?foo=0.0.0.0&bar=%3A%3A";
-        test_url_query(&ip_addrs, url);
+        test_request_query(&ip_addrs, url);
+    }
+
+    #[test]
+    fn request_query_v4() {
+        let ip_addrs = IpAddrs { v4: Some("192.0.2.2".to_string()), v6: None };
+        let url = "https://dyndns.example/?foo=192.0.2.2&bar=%3A%3A";
+        test_request_query(&ip_addrs, url);
+    }
+
+    #[test]
+    fn request_query_v6() {
+        let ip_addrs = IpAddrs { v4: None, v6: Some("2001:db8::".to_string()) };
+        let url = "https://dyndns.example/?foo=0.0.0.0&bar=2001%3Adb8%3A%3A";
+        test_request_query(&ip_addrs, url);
+    }
+
+    #[test]
+    fn request_query_dual() {
+        let ip_addrs = IpAddrs { v4: Some("192.0.2.2".to_string()), v6: Some("2001:db8::".to_string()) };
+        let url = "https://dyndns.example/?foo=192.0.2.2&bar=2001%3Adb8%3A%3A";
+        test_request_query(&ip_addrs, url);
     }
 }
