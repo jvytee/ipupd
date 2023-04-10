@@ -1,14 +1,13 @@
 mod config;
 mod ipaddrs;
-mod update;
 
-use anyhow::Context;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use config::Config;
 use getopts::Options;
 use ipaddrs::IpAddrs;
 use std::env;
 use std::process;
+use ureq::Request;
 
 const DEFAULT_CONFIG: &str = "/etc/ipupd/config.toml";
 
@@ -51,7 +50,7 @@ fn try_main() -> Result<()> {
         IpAddrs::from_domain(domain).with_context(|| format!("Could not resolve {}", domain))?;
 
     if interface_ips != domain_ips {
-        let request = update::create_request(&config, interface_ips);
+        let request = create_request(&config, &interface_ips);
         let response = request.call().context("Could not perform GET request")?;
         println!(
             "{}",
@@ -62,4 +61,49 @@ fn try_main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn create_request(config: &Config, ip_addrs: &IpAddrs) -> Request {
+    let request = ureq::get(&config.url)
+        .query(&config.query.ipv4, &ip_addrs.v4_string())
+        .query(&config.query.ipv6, &ip_addrs.v6_string());
+
+    if let Some(auth) = &config.basic_auth {
+        request.set("Authorization", &auth.to_header())
+    } else {
+        request
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        config::{Config, Query},
+        ipaddrs::IpAddrs,
+    };
+
+    use super::create_request;
+
+    fn test_url_query(ip_addrs: &IpAddrs, url: &str) {
+        let config = Config {
+            interface: "eth0".to_string(),
+            domain: "foobar.example".to_string(),
+            url: "https://dyndns.example".to_string(),
+            basic_auth: None,
+            query: Query {
+                ipv4: "foo".to_string(),
+                ipv6: "bar".to_string(),
+            },
+        };
+
+        let request = create_request(&config, ip_addrs);
+        assert_eq!(request.url(), url);
+    }
+
+    #[test]
+    fn query_empty() {
+        let ip_addrs = IpAddrs { v4: None, v6: None };
+        let url = "https://dyndns.example/?foo=0.0.0.0&bar=%3A%3A";
+        test_url_query(&ip_addrs, url);
+    }
 }
