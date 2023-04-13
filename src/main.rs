@@ -14,7 +14,7 @@ const DEFAULT_CONFIG: &str = "/etc/ipupd/config.toml";
 fn main() {
     if let Err(error) = try_main() {
         eprintln!("{}", error);
-        process::exit(2);
+        process::exit(1);
     }
 }
 
@@ -42,14 +42,15 @@ fn try_main() -> Result<()> {
         .with_context(|| format!("Could not parse config file {}", &config_file))?;
 
     let interface = &config.interface;
-    let interface_ips = IpAddrs::from_interface(interface)
-        .with_context(|| format!("Could not inspect {}", interface))?;
+    let interface_ips = IpAddrs::from_interface(interface);
+    dbg!(&interface_ips);
 
     let domain = &config.domain;
     let domain_ips =
         IpAddrs::from_domain(domain).with_context(|| format!("Could not resolve {}", domain))?;
+    dbg!(&domain_ips);
 
-    if interface_ips != domain_ips {
+    if !interface_ips.is_subset(&domain_ips) {
         let request = create_request(&config, &interface_ips);
         let response = request.call().context("Could not perform GET request")?;
         println!(
@@ -64,9 +65,21 @@ fn try_main() -> Result<()> {
 }
 
 fn create_request(config: &Config, ip_addrs: &IpAddrs) -> Request {
+    let ipv4 = ip_addrs
+        .iter()
+        .find(|ip_addr| ip_addr.is_ipv4())
+        .map(|ip_addr| ip_addr.to_string())
+        .unwrap_or("0.0.0.0".to_string());
+
+    let ipv6 = ip_addrs
+        .iter()
+        .find(|ip_addr| ip_addr.is_ipv6())
+        .map(|ip_addr| ip_addr.to_string())
+        .unwrap_or("::".to_string());
+
     let request = ureq::get(&config.url)
-        .query(&config.query.ipv4, &ip_addrs.v4_string())
-        .query(&config.query.ipv6, &ip_addrs.v6_string());
+        .query(&config.query.ipv4, &ipv4)
+        .query(&config.query.ipv6, &ipv6);
 
     if let Some(auth) = &config.basic_auth {
         request.set("Authorization", &auth.to_header())
@@ -77,6 +90,11 @@ fn create_request(config: &Config, ip_addrs: &IpAddrs) -> Request {
 
 #[cfg(test)]
 mod tests {
+    use std::{
+        collections::HashSet,
+        net::{IpAddr, Ipv4Addr, Ipv6Addr},
+    };
+
     use crate::{
         config::{Config, Query},
         ipaddrs::IpAddrs,
@@ -102,29 +120,34 @@ mod tests {
 
     #[test]
     fn request_query_empty() {
-        let ip_addrs = IpAddrs { v4: None, v6: None };
+        let ip_addrs = IpAddrs(HashSet::new());
         let url = "https://dyndns.example/?foo=0.0.0.0&bar=%3A%3A";
         test_request_query(&ip_addrs, url);
     }
 
     #[test]
     fn request_query_v4() {
-        let ip_addrs = IpAddrs { v4: Some("192.0.2.2".to_string()), v6: None };
-        let url = "https://dyndns.example/?foo=192.0.2.2&bar=%3A%3A";
+        let ip_addrs = IpAddrs(HashSet::from([IpAddr::V4(Ipv4Addr::new(192, 0, 2, 0))]));
+        let url = "https://dyndns.example/?foo=192.0.2.0&bar=%3A%3A";
         test_request_query(&ip_addrs, url);
     }
 
     #[test]
     fn request_query_v6() {
-        let ip_addrs = IpAddrs { v4: None, v6: Some("2001:db8::".to_string()) };
+        let ip_addrs = IpAddrs(HashSet::from([
+            IpAddr::V6(Ipv6Addr::new(0x2001, 0xdb8, 0, 0, 0, 0, 0, 0)),
+        ]));
         let url = "https://dyndns.example/?foo=0.0.0.0&bar=2001%3Adb8%3A%3A";
         test_request_query(&ip_addrs, url);
     }
 
     #[test]
     fn request_query_dual() {
-        let ip_addrs = IpAddrs { v4: Some("192.0.2.2".to_string()), v6: Some("2001:db8::".to_string()) };
-        let url = "https://dyndns.example/?foo=192.0.2.2&bar=2001%3Adb8%3A%3A";
+        let ip_addrs = IpAddrs(HashSet::from([
+            IpAddr::V4(Ipv4Addr::new(192, 0, 2, 0)),
+            IpAddr::V6(Ipv6Addr::new(0x2001, 0xdb8, 0, 0, 0, 0, 0, 0)),
+        ]));
+        let url = "https://dyndns.example/?foo=192.0.2.0&bar=2001%3Adb8%3A%3A";
         test_request_query(&ip_addrs, url);
     }
 }
