@@ -12,7 +12,7 @@
       systems = [ "x86_64-linux" "aarch64-linux" ];
       toolchain = fenix: system: target:
         with fenix.packages.${system};
-        if system == target
+        if target == system
         then stable.toolchain
         else
           combine [
@@ -21,22 +21,31 @@
             targets.${target}.stable.rust-std
           ];
 
+      importNixpkgs = nixpkgs: system: target:
+        if target == system
+        then import nixpkgs { inherit system; }
+        else import nixpkgs { inherit system; crossSystem.config = target; };
+
       fenixRustPlatform = nixpkgs: fenix: system: target:
         let fenixToolchain = toolchain fenix system target;
-        in
-        nixpkgs.makeRustPlatform { cargo = fenixToolchain; rustc = fenixToolchain; };
+        in nixpkgs.makeRustPlatform { cargo = fenixToolchain; rustc = fenixToolchain; };
 
-      ipupdDevShell = nixpkgs: fenix: system: target: nixpkgs.mkShell {
-        nativeBuildInputs = [ (toolchain fenix system target) ];
-        CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${nixpkgs.stdenv.cc.targetPrefix}cc";
-      };
+      ipupdDevShell = nixpkgs: fenix: system: target:
+        with importNixpkgs nixpkgs system target;
+        mkShell {
+          nativeBuildInputs = [ (toolchain fenix system target) ];
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${stdenv.cc.targetPrefix}cc";
+        };
 
       ipupdPackage = nixpkgs: fenix: system: target:
-        (fenixRustPlatform nixpkgs fenix system target).buildRustPackage {
+        let pkgs = importNixpkgs nixpkgs system target;
+        in
+        with pkgs;
+        (fenixRustPlatform pkgs fenix system target).buildRustPackage {
           pname = "ipupd";
           version = "0.3.0";
 
-          src = nixpkgs.fetchgit {
+          src = fetchgit {
             url = "https://github.com/jvytee/ipupd.git";
             rev = "e5b846416eabd43899b68f73880a694aca29f7fc";
             sha256 = "sha256-s+zccrbBUatKT9Zbf/rKAZEtdVc7h99vZvQqm9Ri73Q=";
@@ -44,18 +53,18 @@
 
           cargoLock.lockFile = ./Cargo.lock;
 
-          nativeBuildInputs = with nixpkgs.pkgsBuildHost; [
+          nativeBuildInputs = with pkgsBuildHost; [
             stdenv.cc
           ];
 
-          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${nixpkgs.stdenv.cc.targetPrefix}cc";
+          CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${stdenv.cc.targetPrefix}cc";
         };
     in
     {
       devShells = nixpkgs.lib.genAttrs systems (
         system: {
-          default = ipupdDevShell (import nixpkgs { inherit system; }) fenix system system;
-          ipupd-aarch64 = ipupdDevShell (import nixpkgs { inherit system; crossSystem.config = "aarch64-unknown-linux-gnu"; }) fenix system "aarch64-unknown-linux-gnu";
+          default = ipupdDevShell nixpkgs fenix system system;
+          ipupd-aarch64 = ipupdDevShell nixpkgs fenix system "aarch64-unknown-linux-gnu";
         }
       );
 
@@ -65,8 +74,8 @@
 
       packages = nixpkgs.lib.genAttrs systems (
         system: {
-          default = ipupdPackage (import nixpkgs { inherit system; }) fenix system system;
-          ipupd-aarch64 = ipupdPackage (import nixpkgs { inherit system; crossSystem.config = "aarch64-unknown-linux-gnu"; }) fenix system "aarch64-unknown-linux-gnu";
+          default = ipupdPackage nixpkgs fenix system system;
+          ipupd-aarch64 = ipupdPackage nixpkgs fenix system "aarch64-unknown-linux-gnu";
         }
       );
     };
