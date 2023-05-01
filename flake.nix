@@ -30,11 +30,11 @@
 
         cargoLock.lockFile = ./Cargo.lock;
 
-        nativeBuildInputs = with pkgsBuildHost; [
-          rustc
-          cargo
-          stdenv.cc
-        ];
+        # nativeBuildInputs = with pkgsBuildHost; [
+        #   rustc
+        #   cargo
+        #   stdenv.cc
+        # ];
 
         CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${stdenv.cc.targetPrefix}cc";
       };
