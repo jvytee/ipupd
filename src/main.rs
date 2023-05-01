@@ -134,9 +134,9 @@ mod tests {
 
     #[test]
     fn request_query_v6() {
-        let ip_addrs = IpAddrs(HashSet::from([
-            IpAddr::V6(Ipv6Addr::new(0x2001, 0xdb8, 0, 0, 0, 0, 0, 0)),
-        ]));
+        let ip_addrs = IpAddrs(HashSet::from([IpAddr::V6(Ipv6Addr::new(
+            0x2001, 0xdb8, 0, 0, 0, 0, 0, 0,
+        ))]));
         let url = "https://dyndns.example/?foo=0.0.0.0&bar=2001%3Adb8%3A%3A";
         test_request_query(&ip_addrs, url);
     }
