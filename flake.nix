@@ -1,5 +1,6 @@
 {
   inputs = {
+    nixpkgs.url = "nixpkgs/nixos-22.11";
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
