@@ -44,18 +44,10 @@
         (fenixRustPlatform pkgs fenix system target).buildRustPackage {
           pname = "ipupd";
           version = "0.3.0";
-
-          src = fetchgit {
-            url = "https://github.com/jvytee/ipupd.git";
-            rev = "e5b846416eabd43899b68f73880a694aca29f7fc";
-            sha256 = "sha256-s+zccrbBUatKT9Zbf/rKAZEtdVc7h99vZvQqm9Ri73Q=";
-          };
+          src = self;
 
           cargoLock.lockFile = ./Cargo.lock;
-
-          nativeBuildInputs = with pkgsBuildHost; [
-            stdenv.cc
-          ];
+          depsBuildTarget = with pkgsBuildTarget; [ stdenv.cc ];
 
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${stdenv.cc.targetPrefix}cc";
         };
