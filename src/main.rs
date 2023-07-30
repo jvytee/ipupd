@@ -108,8 +108,9 @@ mod tests {
 
     fn test_request_query(ip_addrs: &IpAddrs, url: &str) {
         let config = Config {
-            interface: "eth0".to_string(),
             domain: "foobar.example".to_string(),
+            interface: "eth0".to_string(),
+            api: None,
             url: "https://dyndns.example".to_string(),
             basic_auth: None,
             query: Query {
