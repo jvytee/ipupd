@@ -33,7 +33,10 @@
       ipupdDevShell = nixpkgs: fenix: system: target:
         with importNixpkgs nixpkgs system target;
         mkShell {
-          nativeBuildInputs = [ (toolchain fenix system target) ];
+          nativeBuildInputs = [
+            (toolchain fenix system target)
+            yaml-language-server
+          ];
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${stdenv.cc.targetPrefix}cc";
         };
 
