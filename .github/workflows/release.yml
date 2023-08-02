@@ -21,9 +21,21 @@ jobs:
       - name: Build default package
         run: nix build .
 
-      - name: Upload resulting binary as artifact
-        uses: actions/upload-artiface@v2
+      - name: Upload binary artifact
+        uses: actions/upload-artiface@v3
         with:
           name: ipupd-x86_64
           path: ${{ github.workspace }}/result/bin/ipupd
-        
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download binary artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ipupd-x86_64
+
+      - name: Create release
+        run: gh release create ${{ github.ref_name }} 'ipupd-x86_64#ipupd-${{ github.ref_name }}-x86_64-linux'
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
