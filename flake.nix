@@ -13,7 +13,12 @@
       toolchain = fenix: system: target:
         with fenix.packages.${system};
         if target == system
-        then stable.toolchain
+        then
+          combine [
+            stable.cargo
+            stable.rustc
+            targets.x86_64-unknown-linux-musl.stable.rust-std
+          ]
         else
           combine [
             stable.cargo
@@ -35,6 +40,8 @@
         mkShell {
           nativeBuildInputs = [
             (toolchain fenix system target)
+            gh
+            rust-analyzer
             yaml-language-server
           ];
           CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${stdenv.cc.targetPrefix}cc";
