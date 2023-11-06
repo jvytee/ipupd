@@ -18,8 +18,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Build default package
-        run: nix build .
+      - name: Build static binary
+        run: nix build .#static
 
       - name: Upload binary artifact
         uses: actions/upload-artiface@v3
