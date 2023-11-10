@@ -38,6 +38,6 @@ jobs:
           name: ipupd-x86_64
 
       - name: Create release
-        run: gh release create ${{ github.ref_name }} '${{ steps.download.outputs.download-path }}#ipupd-${{ github.ref_name }}-x86_64-linux'
+        run: gh release --repo ${{ github.repository }} create ${{ github.ref_name }} '${{ steps.download.outputs.download-path }}#ipupd-${{ github.ref_name }}-x86_64-linux'
         env:
           GITHUB_TOKEN: ${{ secrets.github_token }}
