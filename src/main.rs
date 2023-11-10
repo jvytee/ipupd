@@ -43,12 +43,16 @@ fn try_main() -> Result<()> {
 
     let interface = &config.interface;
     let interface_ips = IpAddrs::from_interface(interface);
-    dbg!(&interface_ips);
+
+    if let Some(api) = &config.api {
+        // TODO:
+        // Get IPv4 from API
+        // Adjust interface_ips accordingly
+    }
 
     let domain = &config.domain;
     let domain_ips =
         IpAddrs::from_domain(domain).with_context(|| format!("Could not resolve {}", domain))?;
-    dbg!(&domain_ips);
 
     if !interface_ips.is_subset(&domain_ips) {
         let request = create_request(&config, &interface_ips);
@@ -104,8 +108,9 @@ mod tests {
 
     fn test_request_query(ip_addrs: &IpAddrs, url: &str) {
         let config = Config {
-            interface: "eth0".to_string(),
             domain: "foobar.example".to_string(),
+            interface: "eth0".to_string(),
+            api: None,
             url: "https://dyndns.example".to_string(),
             basic_auth: None,
             query: Query {

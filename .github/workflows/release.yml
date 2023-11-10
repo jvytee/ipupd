@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+
+name: Create release
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install nix
+        uses: cachix/install-nix-action@v22
+        with:
+          nix_path: nixpkgs=channel:nixos-23.05
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build static binary
+        run: nix build .#static
+
+      - name: Upload binary artifact
+        uses: actions/upload-artiface@v3
+        with:
+          name: ipupd-x86_64
+          path: ${{ github.workspace }}/result/bin/ipupd
+
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download binary artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ipupd-x86_64
+
+      - name: Create release
+        run: gh release create ${{ github.ref_name }} 'ipupd-x86_64#ipupd-${{ github.ref_name }}-x86_64-linux'
+        env:
+          GITHUB_TOKEN: ${{ secrets.github_token }}
