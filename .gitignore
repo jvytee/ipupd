@@ -1,4 +1,6 @@
-/target
-/bin
 .direnv/
 .envrc
+bin/
+config.toml
+result
+target/
