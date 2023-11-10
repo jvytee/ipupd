@@ -11,17 +11,27 @@
     let
       toolchain = { system, rustTarget }:
         with fenix.packages.${system};
-        combine [
+        if rustTarget == system
+        then combine [
+          stable.cargo
+          stable.rustc
+        ]
+        else combine [
           stable.cargo
           stable.rustc
           targets.${rustTarget}.stable.rust-std
         ];
 
+      analyzer = system: fenix.packages.${system}.stable.rust-analyzer;
+
       rustPlatform = { pkgs, system, rustTarget }:
         let
           fenixToolchain = toolchain { inherit system rustTarget; };
           configuredStdenv = pkgs.stdenv.override (prev: { hostPlatform = prev.hostPlatform // { rustc.config = rustTarget; }; });
-        in pkgs.makeRustPlatform { cargo = fenixToolchain; rustc = fenixToolchain; stdenv = configuredStdenv; };
+        in
+          if rustTarget == system
+          then pkgs.makeRustPlatform { cargo = fenixToolchain; rustc = fenixToolchain; }
+          else pkgs.makeRustPlatform { cargo = fenixToolchain; rustc = fenixToolchain; stdenv = configuredStdenv; };
 
       ipupdDevShell = { system, rustTarget ? system }:
         let
@@ -31,7 +41,7 @@
           nativeBuildInputs = with pkgs; [
             fenixToolchain
             gh
-            rust-analyzer
+            (analyzer system)
             yaml-language-server
           ];
         };
@@ -57,7 +67,9 @@
 
       packages = {
         x86_64-linux.default = ipupdPackage { system = "x86_64-linux"; };
+        x86_64-linux.static = ipupdPackage { system = "x86_64-linux"; rustTarget = "x86_64-unknown-linux-musl"; };
         aarch64-linux.default = ipupdPackage { system = "aarch64-linux"; };
+        aarch64-linux.static = ipupdPackage { system = "aarch64-linux"; rustTarget = "aarch64-unknown-linux-musl"; };
       };
     };
 }
