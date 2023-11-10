@@ -22,7 +22,7 @@ jobs:
         run: nix build .#static
 
       - name: Upload binary artifact
-        uses: actions/upload-artiface@v3
+        uses: actions/upload-artifact@v3
         with:
           name: ipupd-x86_64
           path: ${{ github.workspace }}/result/bin/ipupd
