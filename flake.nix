@@ -22,7 +22,7 @@
           targets.${rustTarget}.stable.rust-std
         ];
 
-      analyzer = system: fenix.packages.${system}.stable.rust-analyzer;
+      devToolchain = system: fenix.packages.${system}.stable.toolchain;
 
       rustPlatform = { pkgs, system, rustTarget }:
         let
@@ -36,12 +36,11 @@
       ipupdDevShell = { system, rustTarget ? system }:
         let
           pkgs = import nixpkgs { inherit system; };
-          fenixToolchain = toolchain { inherit system rustTarget; };
+          fenixToolchain = devToolchain system;
         in pkgs.mkShell {
           nativeBuildInputs = with pkgs; [
             fenixToolchain
             gh
-            (analyzer system)
             yaml-language-server
           ];
         };
