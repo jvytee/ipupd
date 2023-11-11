@@ -8,7 +8,7 @@ use std::io::prelude::*;
 pub struct Config {
     pub domain: String,
     pub interface: String,
-    pub api: Option<Api>,
+    pub api: Option<String>,
     pub url: String,
     pub basic_auth: Option<Auth>,
     pub query: Query,
@@ -24,12 +24,6 @@ pub struct Auth {
 pub struct Query {
     pub ipv4: String,
     pub ipv6: String,
-}
-
-#[derive(Deserialize)]
-pub struct Api {
-    pub url: String,
-    pub json: Option<String>
 }
 
 impl Config {

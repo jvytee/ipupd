@@ -5,7 +5,9 @@ use anyhow::{Context, Result};
 use config::Config;
 use getopts::Options;
 use ipaddrs::IpAddrs;
+use std::collections::HashSet;
 use std::env;
+use std::net::IpAddr;
 use std::process;
 use ureq::Request;
 
@@ -44,18 +46,20 @@ fn try_main() -> Result<()> {
     let interface = &config.interface;
     let interface_ips = IpAddrs::from_interface(interface);
 
-    if let Some(api) = &config.api {
-        // TODO:
-        // Get IPv4 from API
-        // Adjust interface_ips accordingly
-    }
+    let ip_addrs = match &config.api {
+        Some(endpoint) => {
+            let api_ips = IpAddrs::from_api(endpoint)?;
+            IpAddrs(interface_ips.union(&api_ips).copied().collect::<HashSet<IpAddr>>())
+        },
+        None => interface_ips
+    };
 
     let domain = &config.domain;
     let domain_ips =
         IpAddrs::from_domain(domain).with_context(|| format!("Could not resolve {}", domain))?;
 
-    if !interface_ips.is_subset(&domain_ips) {
-        let request = create_request(&config, &interface_ips);
+    if !ip_addrs.is_subset(&domain_ips) {
+        let request = create_request(&config, &ip_addrs);
         let response = request.call().context("Could not perform GET request")?;
         println!(
             "{}",
