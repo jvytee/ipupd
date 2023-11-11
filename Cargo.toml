@@ -12,8 +12,8 @@ base64 = "0.21"
 getopts = "0.2"
 pnet = "0.34"
 serde = { version = "1.0", features = ["derive"] }
-toml = "0.7"
-ureq = "2.7"
+toml = "0.8"
+ureq = "2.8"
 
 [profile.release]
 strip = true
