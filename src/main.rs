@@ -5,10 +5,7 @@ use anyhow::{Context, Result};
 use config::Config;
 use getopts::Options;
 use ipaddrs::IpAddrs;
-use std::collections::HashSet;
-use std::env;
-use std::net::IpAddr;
-use std::process;
+use std::{collections::HashSet, env, net::IpAddr, process};
 use ureq::Request;
 
 const DEFAULT_CONFIG: &str = "/etc/ipupd/config.toml";
@@ -49,9 +46,14 @@ fn try_main() -> Result<()> {
     let ip_addrs = match &config.api {
         Some(endpoint) => {
             let api_ips = IpAddrs::from_api(endpoint)?;
-            IpAddrs(interface_ips.union(&api_ips).copied().collect::<HashSet<IpAddr>>())
-        },
-        None => interface_ips
+            IpAddrs(
+                interface_ips
+                    .union(&api_ips)
+                    .copied()
+                    .collect::<HashSet<IpAddr>>(),
+            )
+        }
+        None => interface_ips,
     };
 
     let domain = &config.domain;
