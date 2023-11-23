@@ -5,7 +5,6 @@ use anyhow::{Context, Result};
 use config::Config;
 use getopts::Options;
 use ipaddrs::IpAddrs;
-use log;
 use std::{collections::HashSet, env, net::IpAddr, process};
 use ureq::Request;
 
@@ -45,12 +44,12 @@ fn try_main() -> Result<()> {
         .with_context(|| format!("Could not load config file {config_file}"))?;
 
     let interface = &config.interface;
-    log::info!("Reading IPv6s of interface {interface}");
+    log::info!("Reading current IPv6 addresses of interface {interface}");
     let interface_ips = IpAddrs::from_interface(interface);
 
     let ip_addrs = match &config.api {
         Some(endpoint) => {
-            log::info!("Requesting IPv4s from API {endpoint}");
+            log::info!("Requesting current IPv4 addresses from API {endpoint}");
             let api_ips = IpAddrs::from_api(endpoint)
                 .with_context(|| format!("Could not request IPs from {endpoint}"))?;
             IpAddrs(
@@ -64,12 +63,12 @@ fn try_main() -> Result<()> {
     };
 
     let domain = &config.domain;
-    log::info!("Resolving IPs of domain {domain}");
+    log::info!("Resolving registered IP addresses of domain {domain}");
     let domain_ips =
         IpAddrs::from_domain(domain).with_context(|| format!("Could not resolve {domain}"))?;
 
     if !ip_addrs.is_subset(&domain_ips) {
-        log::info!("Sending IPs to {}", &config.url);
+        log::info!("Updating IP addresses at {}", &config.url);
         let request = create_request(&config, &ip_addrs);
         let response = request
             .call()
@@ -78,7 +77,7 @@ fn try_main() -> Result<()> {
         let status_text = response.status_text().to_string();
         log::info!("Got {status} {status_text}. Done.");
     } else {
-        log::info!("IPs are up to date. Done.");
+        log::info!("IP adresses are up to date. Done.");
     }
 
     Ok(())
