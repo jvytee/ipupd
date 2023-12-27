@@ -32,6 +32,20 @@ impl IpAddrs {
         )
     }
 
+    pub fn from_api(endpoint: &str) -> Result<Self> {
+        let result = ureq::get(endpoint)
+            .call()
+            .with_context(|| format!("Could not GET {endpoint}"))?;
+        let content = result
+            .into_string()
+            .context("Could not read response body")?;
+        let ip_addr: IpAddr = content
+            .trim()
+            .parse()
+            .context("Could not parse response as IPv4 address")?;
+        Ok(Self(HashSet::from([ip_addr])))
+    }
+
     fn is_global(ip_addr: &IpAddr) -> bool {
         match ip_addr {
             IpAddr::V6(ipv6) => ipv6

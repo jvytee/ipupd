@@ -5,15 +5,16 @@ use anyhow::{Context, Result};
 use config::Config;
 use getopts::Options;
 use ipaddrs::IpAddrs;
-use std::env;
-use std::process;
+use std::{collections::HashSet, env, net::IpAddr, process};
 use ureq::Request;
 
 const DEFAULT_CONFIG: &str = "/etc/ipupd/config.toml";
 
 fn main() {
+    env_logger::init();
+
     if let Err(error) = try_main() {
-        eprintln!("{}", error);
+        log::error!("{error}");
         process::exit(1);
     }
 }
@@ -38,31 +39,45 @@ fn try_main() -> Result<()> {
     }
 
     let config_file = matches.opt_str("c").unwrap_or(DEFAULT_CONFIG.to_string());
+    log::info!("Loading config file {config_file}");
     let config = Config::from_file(&config_file)
-        .with_context(|| format!("Could not parse config file {}", &config_file))?;
+        .with_context(|| format!("Could not load config file {config_file}"))?;
 
     let interface = &config.interface;
+    log::info!("Reading current IPv6 addresses of interface {interface}");
     let interface_ips = IpAddrs::from_interface(interface);
 
-    if let Some(api) = &config.api {
-        // TODO:
-        // Get IPv4 from API
-        // Adjust interface_ips accordingly
-    }
+    let ip_addrs = match &config.ipv4_url {
+        Some(endpoint) => {
+            log::info!("Requesting current IPv4 addresses from API {endpoint}");
+            let api_ips = IpAddrs::from_api(endpoint)
+                .with_context(|| format!("Could not request IPs from {endpoint}"))?;
+            IpAddrs(
+                interface_ips
+                    .union(&api_ips)
+                    .copied()
+                    .collect::<HashSet<IpAddr>>(),
+            )
+        }
+        None => interface_ips,
+    };
 
     let domain = &config.domain;
+    log::info!("Resolving registered IP addresses of domain {domain}");
     let domain_ips =
-        IpAddrs::from_domain(domain).with_context(|| format!("Could not resolve {}", domain))?;
+        IpAddrs::from_domain(domain).with_context(|| format!("Could not resolve {domain}"))?;
 
-    if !interface_ips.is_subset(&domain_ips) {
-        let request = create_request(&config, &interface_ips);
-        let response = request.call().context("Could not perform GET request")?;
-        println!(
-            "{}",
-            response
-                .into_string()
-                .context("Could not read response body")?
-        );
+    if !ip_addrs.is_subset(&domain_ips) {
+        log::info!("Updating IP addresses at {}", &config.dyndns_url);
+        let request = create_request(&config, &ip_addrs);
+        let response = request
+            .call()
+            .with_context(|| format!("Could not GET {}", &config.dyndns_url))?;
+        let status = response.status();
+        let status_text = response.status_text().to_string();
+        log::info!("Got {status} {status_text}. Done.");
+    } else {
+        log::info!("IP adresses are up to date. Done.");
     }
 
     Ok(())
@@ -81,7 +96,7 @@ fn create_request(config: &Config, ip_addrs: &IpAddrs) -> Request {
         .map(|ip_addr| ip_addr.to_string())
         .unwrap_or("::".to_string());
 
-    let request = ureq::get(&config.url)
+    let request = ureq::get(&config.dyndns_url)
         .query(&config.query.ipv4, &ipv4)
         .query(&config.query.ipv6, &ipv6);
 
@@ -110,8 +125,8 @@ mod tests {
         let config = Config {
             domain: "foobar.example".to_string(),
             interface: "eth0".to_string(),
-            api: None,
-            url: "https://dyndns.example".to_string(),
+            ipv4_url: None,
+            dyndns_url: "https://dyndns.example".to_string(),
             basic_auth: None,
             query: Query {
                 ipv4: "foo".to_string(),
