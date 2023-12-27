@@ -37,9 +37,10 @@ By default, ipupd will try to read its configuration from `/etc/ipupd/config.tom
 Parameters are set in [TOML](https://toml.io/en/) format like below:
 
 ```toml
-interface = "eth0"
 domain = "example.org"
-url = "https://dyndns.inwx.com/nic/update"
+interface = "eth0"
+ipv4_url = "https://ipv4.icanhazip.com"
+dyndns_url = "https://dyndns.inwx.com/nic/update"
 
 [query]
 ipv4 = "myip"
@@ -50,8 +51,9 @@ username = "example"
 password = "12345"
 ```
 
+- `domain` is the domain for which IPs are going to be updated
 - `interface` gives the network interface which will be used to estimate current IP addresses
-- `domain` is the domain, for which IPs are going to be updated
-- `url` specifies an API endpoint by which IPs are updated
-- `query` defines the query parameter names for the API. So in combination with `url`, the example will result in a HTTP GET request to `https://dyndns.inwx.com/nic/update?myip=1.2.3.4&myipv6=1234:4567::89`.
+- `ipv4_url` is an HTTP(S) endpoint which returns the client's [public IPv4 address as plain text](https://ipv4.icanhazip.com)
+- `dyndns_url` specifies an API endpoint by which IPs are updated
+- `query` defines the query parameter names for the API. So in combination with `dyndns_url`, the example will result in a HTTP GET request to `https://dyndns.inwx.com/nic/update?myip=1.2.3.4&myipv6=1234:4567::89`.
 - `basic_auth` allows for the configuration of HTTP basic authorization for the API (optional)

@@ -47,7 +47,7 @@ fn try_main() -> Result<()> {
     log::info!("Reading current IPv6 addresses of interface {interface}");
     let interface_ips = IpAddrs::from_interface(interface);
 
-    let ip_addrs = match &config.pubip_url {
+    let ip_addrs = match &config.ipv4_url {
         Some(endpoint) => {
             log::info!("Requesting current IPv4 addresses from API {endpoint}");
             let api_ips = IpAddrs::from_api(endpoint)
@@ -125,7 +125,7 @@ mod tests {
         let config = Config {
             domain: "foobar.example".to_string(),
             interface: "eth0".to_string(),
-            pubip_url: None,
+            ipv4_url: None,
             dyndns_url: "https://dyndns.example".to_string(),
             basic_auth: None,
             query: Query {
