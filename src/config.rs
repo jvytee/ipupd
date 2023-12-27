@@ -8,8 +8,8 @@ use std::io::prelude::*;
 pub struct Config {
     pub domain: String,
     pub interface: String,
-    pub api: Option<String>,
-    pub url: String,
+    pub pubip_url: Option<String>,
+    pub dyndns_url: String,
     pub basic_auth: Option<Auth>,
     pub query: Query,
 }

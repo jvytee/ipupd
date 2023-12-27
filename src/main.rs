@@ -47,7 +47,7 @@ fn try_main() -> Result<()> {
     log::info!("Reading current IPv6 addresses of interface {interface}");
     let interface_ips = IpAddrs::from_interface(interface);
 
-    let ip_addrs = match &config.api {
+    let ip_addrs = match &config.pubip_url {
         Some(endpoint) => {
             log::info!("Requesting current IPv4 addresses from API {endpoint}");
             let api_ips = IpAddrs::from_api(endpoint)
@@ -68,11 +68,11 @@ fn try_main() -> Result<()> {
         IpAddrs::from_domain(domain).with_context(|| format!("Could not resolve {domain}"))?;
 
     if !ip_addrs.is_subset(&domain_ips) {
-        log::info!("Updating IP addresses at {}", &config.url);
+        log::info!("Updating IP addresses at {}", &config.dyndns_url);
         let request = create_request(&config, &ip_addrs);
         let response = request
             .call()
-            .with_context(|| format!("Could not GET {}", &config.url))?;
+            .with_context(|| format!("Could not GET {}", &config.dyndns_url))?;
         let status = response.status();
         let status_text = response.status_text().to_string();
         log::info!("Got {status} {status_text}. Done.");
@@ -96,7 +96,7 @@ fn create_request(config: &Config, ip_addrs: &IpAddrs) -> Request {
         .map(|ip_addr| ip_addr.to_string())
         .unwrap_or("::".to_string());
 
-    let request = ureq::get(&config.url)
+    let request = ureq::get(&config.dyndns_url)
         .query(&config.query.ipv4, &ipv4)
         .query(&config.query.ipv6, &ipv6);
 
@@ -125,8 +125,8 @@ mod tests {
         let config = Config {
             domain: "foobar.example".to_string(),
             interface: "eth0".to_string(),
-            api: None,
-            url: "https://dyndns.example".to_string(),
+            pubip_url: None,
+            dyndns_url: "https://dyndns.example".to_string(),
             basic_auth: None,
             query: Query {
                 ipv4: "foo".to_string(),
