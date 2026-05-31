@@ -5,7 +5,7 @@
 }:
 rustPlatform.buildRustPackage {
   pname = "ipupdate";
-  version = "0.3.0";
+  version = "0.4.0";
   src = ./.;
   cargoLock.lockFile = ./Cargo.lock;
 
